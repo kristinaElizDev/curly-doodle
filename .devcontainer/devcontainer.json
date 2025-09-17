@@ -1,0 +1,22 @@
+{
+  "name": "Ruby on Rails with Azure Redis",
+  "image": "mcr.microsoft.com/devcontainers/ruby:3.2",
+  "features": {
+    "ghcr.io/devcontainers/features/azure-cli:1": {}
+  },
+  "forwardPorts": [3000],
+  "postCreateCommand": "bundle install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rebornix.Ruby",
+        "ms-vscode.vscode-json",
+        "ms-azure-devops.azure-pipelines",
+        "ms-vscode.azure-account"
+      ]
+    }
+  },
+  "remoteEnv": {
+    "BUNDLE_PATH": "./vendor/bundle"
+  }
+}

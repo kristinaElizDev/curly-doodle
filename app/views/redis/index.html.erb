@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Azure Redis Testing Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .header {
+      background: linear-gradient(135deg, #0078d4, #106ebe);
+      color: white;
+      padding: 30px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .status-connected {
+      color: #107c10;
+      font-weight: bold;
+    }
+    .status-disconnected {
+      color: #d13438;
+      font-weight: bold;
+    }
+    .status-error {
+      color: #ff8c00;
+      font-weight: bold;
+    }
+    .test-result {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border-left: 4px solid;
+    }
+    .test-pass {
+      background-color: #f0f9ff;
+      border-left-color: #107c10;
+    }
+    .test-fail {
+      background-color: #fef7f7;
+      border-left-color: #d13438;
+    }
+    .test-error {
+      background-color: #fffbf0;
+      border-left-color: #ff8c00;
+    }
+    .button {
+      background-color: #0078d4;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    .button:hover {
+      background-color: #106ebe;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .info-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e1e5e9;
+    }
+    .info-label {
+      font-weight: bold;
+      color: #323130;
+      margin-bottom: 5px;
+    }
+    .info-value {
+      color: #605e5c;
+      font-family: 'Courier New', monospace;
+    }
+    .code-block {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🔗 Azure Managed Redis Connection Dashboard</h1>
+    <p>Testing connectivity and operations with Azure Redis using Entra ID authentication</p>
+  </div>
+
+  <div class="card">
+    <h2>Connection Status</h2>
+    <% if @redis_info&.dig(:connected) %>
+      <p class="status-connected">✅ Connected to Redis</p>
+    <% elsif @redis_info&.dig(:error) %>
+      <p class="status-error">⚠️ Connection Error</p>
+      <p><strong>Error:</strong> <%= @redis_info[:error] %></p>
+      <p><strong>Suggestion:</strong> <%= @redis_info[:suggestion] %></p>
+    <% else %>
+      <p class="status-disconnected">❌ Not Connected</p>
+    <% end %>
+
+    <% if @redis_info&.dig(:connected) && @redis_info[:info] %>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Redis Version</div>
+          <div class="info-value"><%= @redis_info[:server_version] %></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Memory Usage</div>
+          <div class="info-value"><%= @redis_info[:memory_usage] %></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Connected Clients</div>
+          <div class="info-value"><%= @redis_info[:connected_clients] %></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Redis Mode</div>
+          <div class="info-value"><%= @redis_info.dig(:info, 'redis_mode') || 'standalone' %></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="card">
+    <h2>Test Redis Operations</h2>
+    <p>Run comprehensive tests to verify Redis functionality:</p>
+    <%= link_to "Run Tests", redis_test_path, method: :get, class: "button" %>
+    
+    <% if @test_results %>
+      <h3>Test Results</h3>
+      <% @test_results.each do |result| %>
+        <div class="test-result test-<%= result[:result].downcase %>">
+          <strong><%= result[:test] %>:</strong> 
+          <span class="status-<%= result[:result] == 'PASS' ? 'connected' : (result[:result] == 'FAIL' ? 'disconnected' : 'error') %>">
+            <%= result[:result] %>
+          </span>
+          <br>
+          <small><%= result[:details] %></small>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="card">
+    <h2>Configuration Guide</h2>
+    <p>To connect to Azure Managed Redis with Entra ID authentication, set these environment variables:</p>
+    
+    <div class="code-block">
+# Azure Redis Configuration
+AZURE_REDIS_HOST=your-redis-instance.redis.cache.windows.net
+AZURE_REDIS_PORT=6380
+AZURE_REDIS_USERNAME=default
+AZURE_REDIS_ACCESS_TOKEN=your_entra_id_token
+
+# For local development (fallback)
+REDIS_URL=redis://localhost:6379
+    </div>
+
+    <h3>Azure CLI Commands</h3>
+    <p>Use these commands to get authentication token:</p>
+    <div class="code-block">
+# Login to Azure
+az login
+
+# Get access token for Redis
+az account get-access-token --resource https://redis.azure.com
+
+# Set environment variable
+export AZURE_REDIS_ACCESS_TOKEN=$(az account get-access-token --resource https://redis.azure.com --query accessToken -o tsv)
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>GitHub Codespace Setup</h2>
+    <p>This project is configured to run in GitHub Codespace with:</p>
+    <ul>
+      <li>Ruby 3.2 development container</li>
+      <li>Azure CLI pre-installed</li>
+      <li>Port 3000 forwarded for Rails server</li>
+      <li>VS Code extensions for Ruby and Azure development</li>
+    </ul>
+    
+    <p>To start the Rails server:</p>
+    <div class="code-block">
+# In the Codespace terminal
+bundle exec rails server
+
+# Then access via the forwarded port or click the pop-up
+    </div>
+  </div>
+</body>
+</html>
