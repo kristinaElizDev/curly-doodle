@@ -111,6 +111,27 @@
   </div>
 
   <div class="card">
+    <h2>Test ABS Connectivity</h2>
+    <p>This is to init Azure connectivity</p>
+   
+    <% if @abs_info.present? %>
+      <%# Display ABS info in a user-friendly way whether it's a string or a hash %>
+      <% if @abs_info.is_a?(Hash) %>
+        <div class="info-grid">
+          <% @abs_info.each do |key, value| %>
+            <div class="info-item">
+              <div class="info-label"><%= key.to_s.humanize %></div>
+              <div class="info-value"><%= value %></div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="info-value"><%= @abs_info %></p>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="card">
     <h2>Connection Status</h2>
     <% if @redis_info&.dig(:connected) %>
       <p class="status-connected">✅ Connected to Redis</p>

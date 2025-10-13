@@ -2,7 +2,11 @@ Rails.application.routes.draw do
   root "redis#index"
   get "redis/index"
   get "redis/test"
-  
+
+  # Add ABS-specific routes so there is a dedicated ABS page and test endpoint
+  get "abs/index"
+  get "abs/test"
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

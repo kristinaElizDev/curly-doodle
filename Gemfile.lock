@@ -75,6 +75,14 @@ GEM
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
     ast (2.4.3)
+    azure-storage-blob (2.0.3)
+      azure-storage-common (~> 2.0)
+      nokogiri (~> 1, >= 1.10.8)
+    azure-storage-common (2.0.4)
+      faraday (~> 1.0)
+      faraday_middleware (~> 1.0, >= 1.0.0.rc1)
+      net-http-persistent (~> 4.0)
+      nokogiri (~> 1, >= 1.10.8)
     azure_mgmt_redis (0.17.4)
       ms_rest_azure (~> 0.12.0)
     base64 (0.3.0)
@@ -139,6 +147,8 @@ GEM
     faraday-patron (1.0.0)
     faraday-rack (1.0.0)
     faraday-retry (1.0.3)
+    faraday_middleware (1.2.1)
+      faraday (~> 1.0)
     fugit (1.11.2)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
@@ -198,6 +208,8 @@ GEM
       ms_rest (~> 0.7.6)
     msgpack (1.8.0)
     multipart-post (2.4.1)
+    net-http-persistent (4.0.6)
+      connection_pool (~> 2.2, >= 2.2.4)
     net-imap (0.5.10)
       date
       net-protocol
@@ -417,6 +429,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  azure-storage-blob (~> 2.0.2)
   azure_mgmt_redis (~> 0.17.4)
   bootsnap
   brakeman

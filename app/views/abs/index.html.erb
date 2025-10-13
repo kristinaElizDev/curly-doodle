@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Azure Blob/Storage (ABS) Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .header {
+      background: linear-gradient(135deg, #0078d4, #106ebe);
+      color: white;
+      padding: 30px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .status-connected { color: #107c10; font-weight: bold; }
+    .status-disconnected { color: #d13438; font-weight: bold; }
+    .status-error { color: #ff8c00; font-weight: bold; }
+    .button { background-color: #0078d4; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 16px; margin: 10px 5px; }
+    .button:hover { background-color: #106ebe; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
+    .info-item { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e1e5e9; }
+    .info-label { font-weight: bold; color: #323130; margin-bottom: 5px; }
+    .info-value { color: #605e5c; font-family: 'Courier New', monospace; }
+    .test-result { padding: 15px; margin: 10px 0; border-radius: 6px; border-left: 4px solid; }
+    .test-pass { background-color: #f0f9ff; border-left-color: #107c10; }
+    .test-fail { background-color: #fef7f7; border-left-color: #d13438; }
+    .test-error { background-color: #fffbf0; border-left-color: #ff8c00; }
+    .code-block { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 14px; overflow-x: auto; margin: 15px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🔎 Azure Blob/Storage (ABS) Connection</h1>
+    <p>Check connectivity and basic ABS operations (using the ABS service)</p>
+  </div>
+
+  <div class="card">
+    <h2>Test ABS Connectivity</h2>
+    <p>This initializes a quick ABS check and shows returned status.</p>
+
+    <% if @abs_info.present? %>
+      <% if @abs_info.is_a?(Hash) %>
+        <% if @abs_info[:connected] %>
+          <p class="status-connected">✅ Connected to ABS</p>
+        <% elsif @abs_info[:error] %>
+          <p class="status-error">⚠️ Connection Error</p>
+          <p><strong>Error:</strong> <%= @abs_info[:error] %></p>
+          <p><strong>Suggestion:</strong> <%= @abs_info[:suggestion] %></p>
+        <% else %>
+          <p class="status-disconnected">❌ Not Connected</p>
+        <% end %>
+
+        <div class="info-grid">
+          <% @abs_info.each do |k, v| %>
+            <div class="info-item">
+              <div class="info-label"><%= k.to_s.humanize %></div>
+              <div class="info-value"><%= v %></div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="info-value"><%= @abs_info %></p>
+      <% end %>
+    <% else %>
+      <p class="status-disconnected">No ABS information available.</p>
+    <% end %>
+
+    <%= link_to "Run ABS Tests", abs_test_path, method: :get, class: "button" %>
+  </div>
+
+  <div class="card">
+    <h2>Test Results</h2>
+    <% if @test_results %>
+      <% @test_results.each do |result| %>
+        <div class="test-result test-<%= result[:result].downcase %>">
+          <strong><%= result[:test] %>:</strong>
+          <span class="status-<%= result[:result] == 'PASS' ? 'connected' : (result[:result] == 'FAIL' ? 'disconnected' : 'error') %>">
+            <%= result[:result] %>
+          </span>
+          <br>
+          <small><%= result[:details] %></small>
+        </div>
+      <% end %>
+    <% else %>
+      <p>No tests have been run yet. Click "Run ABS Tests" to execute them.</p>
+    <% end %>
+  </div>
+
+  <div class="card">
+    <h2>Configuration Notes</h2>
+    <p>When you implement real ABS calls, set these environment variables (example):</p>
+    <div class="code-block">
+# Azure Storage
+AZURE_STORAGE_ACCOUNT=your-account-name
+AZURE_STORAGE_ACCESS_KEY=your-access-key
+AZURE_STORAGE_CONTAINER=your-container-name
+    </div>
+  </div>
+</body>
+</html>

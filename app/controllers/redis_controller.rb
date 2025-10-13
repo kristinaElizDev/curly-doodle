@@ -1,6 +1,7 @@
 class RedisController < ApplicationController
   def index
     @redis_info = get_redis_info
+    @abs_info = AbsInfoService.call
   end
 
   def test
@@ -14,11 +15,11 @@ class RedisController < ApplicationController
     begin
       redis = Rails.application.config.redis
       {
-        connected: redis.ping == 'PONG',
+        connected: redis.ping == "PONG",
         info: redis.info,
-        server_version: redis.info['redis_version'],
-        memory_usage: redis.info['used_memory_human'],
-        connected_clients: redis.info['connected_clients']
+        server_version: redis.info["redis_version"],
+        memory_usage: redis.info["used_memory_human"],
+        connected_clients: redis.info["connected_clients"]
       }
     rescue => e
       {
@@ -32,12 +33,12 @@ class RedisController < ApplicationController
   def perform_redis_tests
     results = []
     redis = Rails.application.config.redis
-    
+
     begin
       # Test 1: Basic ping
       results << {
         test: "Ping Test",
-        result: redis.ping == 'PONG' ? "PASS" : "FAIL",
+        result: redis.ping == "PONG" ? "PASS" : "FAIL",
         details: "Basic connectivity test"
       }
 
@@ -46,7 +47,7 @@ class RedisController < ApplicationController
       test_value = "Hello Azure Redis!"
       redis.set(test_key, test_value)
       retrieved_value = redis.get(test_key)
-      
+
       results << {
         test: "Set/Get Test",
         result: retrieved_value == test_value ? "PASS" : "FAIL",
@@ -57,7 +58,7 @@ class RedisController < ApplicationController
       redis.setex("expiring_key", 1, "This will expire")
       sleep(2)
       expired_value = redis.get("expiring_key")
-      
+
       results << {
         test: "Expiration Test",
         result: expired_value.nil? ? "PASS" : "FAIL",
@@ -69,7 +70,7 @@ class RedisController < ApplicationController
       redis.hset(hash_key, "field1", "value1")
       redis.hset(hash_key, "field2", "value2")
       hash_value = redis.hgetall(hash_key)
-      
+
       results << {
         test: "Hash Operations",
         result: hash_value.length == 2 ? "PASS" : "FAIL",
